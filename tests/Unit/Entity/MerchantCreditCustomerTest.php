@@ -10,6 +10,7 @@ class MerchantCreditCustomerTest extends TestCase
     protected function setUp(): void
     {
         \Db::resetInstance();
+        \Configuration::reset();
     }
 
     public function testDefaultCreditLimit(): void

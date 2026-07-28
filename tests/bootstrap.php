@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 // PS constants
 if (!defined('_PS_VERSION_')) {
@@ -152,4 +152,39 @@ if (!class_exists('PaymentModule')) {
 // Merchantcredit stub — used as mock base in hook tests
 if (!class_exists('Merchantcredit')) {
     class Merchantcredit extends PaymentModule {}
+}
+
+// Configuration stub — tests set values via Configuration::set()
+if (!class_exists('Configuration')) {
+    class Configuration
+    {
+        private static array $values = [];
+
+        public static function set(string $key, mixed $value): void
+        {
+            self::$values[$key] = $value;
+        }
+
+        public static function get(string $key, mixed $idLang = null, mixed $idShopGroup = null, mixed $idShop = null, mixed $default = false): mixed
+        {
+            return self::$values[$key] ?? $default;
+        }
+
+        public static function updateValue(string $key, mixed $value): bool
+        {
+            self::$values[$key] = $value;
+            return true;
+        }
+
+        public static function deleteByName(string $key): bool
+        {
+            unset(self::$values[$key]);
+            return true;
+        }
+
+        public static function reset(): void
+        {
+            self::$values = [];
+        }
+    }
 }
