@@ -6,17 +6,15 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MerchantCredit\Entity\MerchantCreditCustomer;
-use MerchantCredit\Hook\CustomerFormHooks;
-use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Symfony\Component\Form\FormBuilderInterface;
+use MerchantCredit\Hook\ActionObjectOrderAddBeforeHook;
+use MerchantCredit\Hook\AfterCreateCustomerFormHandlerHook;
+use MerchantCredit\Hook\AfterUpdateCustomerFormHandlerHook;
+use MerchantCredit\Hook\CustomerFormBuilderModifierHook;
+use MerchantCredit\Hook\DisplayHeaderHook;
+use MerchantCredit\Hook\PaymentOptionsHook;
 
 class Merchantcredit extends PaymentModule
 {
-    const MODULE_ADMIN_CONTROLLER = 'AdminMerchantCreditConfiguration';
-
-    public $controllers = ['validation'];
-
     public function __construct()
     {
         $this->name = 'merchantcredit';
@@ -36,11 +34,11 @@ class Merchantcredit extends PaymentModule
 
     public function install(): bool
     {
-        include(dirname(__FILE__) . '/sql/install.php');
+        include __DIR__ . '/sql/install.php';
 
         return parent::install()
             && $this->registerHook('paymentOptions')
-            && $this->registerHook('paymentReturn')
+            && $this->registerHook('displayHeader')
             && $this->registerHook('actionObjectOrderAddBefore')
             && $this->registerHook('actionCustomerFormBuilderModifier')
             && $this->registerHook('actionAfterUpdateCustomerFormHandler')
@@ -50,122 +48,44 @@ class Merchantcredit extends PaymentModule
 
     public function uninstall(): bool
     {
-        include(dirname(__FILE__).'/sql/uninstall.php');
+        include __DIR__ . '/sql/uninstall.php';
 
         return parent::uninstall();
     }
 
-    public function hookPaymentOptions(array $params): array
+    public function getContext(): Context
     {
-        if (!$this->active) {
-            return [];
-        }
-
-        /** @var Cart $cart */
-        $cart = $params['cart'];
-        $idCustomer = (int) $cart->id_customer;
-
-        if ($idCustomer === 0) {
-            return [];
-        }
-
-        $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
-        $remaining = MerchantCreditCustomer::getRemaining($idCustomer);
-        $hasEnoughCredit = $remaining >= $total;
-
-        $locale = $this->context->getCurrentLocale();
-        $currencyIso = $this->context->currency->iso_code;
-
-        $this->smarty->assign([
-            'remaining_formatted' => $locale->formatPrice($remaining, $currencyIso),
-            'total_formatted'     => $locale->formatPrice($total, $currencyIso),
-            'has_enough_credit'   => $hasEnoughCredit,
-        ]);
-
-        $option = new PaymentOption();
-        $option->setModuleName($this->name)
-               ->setCallToActionText(
-                   $this->trans(
-                       'Pay with merchant credit (%remaining% remaining)',
-                       ['%remaining%' => $locale->formatPrice($remaining, $currencyIso)],
-                       'Modules.Merchantcredit.Front'
-                   )
-               )
-               ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true))
-               ->setAdditionalInformation(
-                   $this->fetch('module:merchantcredit/views/templates/hook/payment_infos.tpl')
-               );
-
-        return [$option];
+        return $this->context;
     }
 
-    public function hookPaymentReturn(): void
+    public function hookPaymentOptions(array $params): array
     {
+        return (new PaymentOptionsHook($this))->handle($params);
+    }
+
+    public function hookDisplayHeader(): void
+    {
+        (new DisplayHeaderHook($this))->handle();
     }
 
     public function hookActionObjectOrderAddBefore(array $params): void
     {
-        /** @var Order $order */
-        $order = $params['object'] ?? null;
-        if (!$order instanceof Order || $order->module !== $this->name) {
-            return;
-        }
-
-        $idCustomer = (int) $order->id_customer;
-        $total = (float) $order->total_paid;
-
-        if (MerchantCreditCustomer::getRemaining($idCustomer) >= $total) {
-            return;
-        }
-
-        $controller = $this->context->controller;
-        if ($controller instanceof FrontController) {
-            $controller->errors[] = $this->trans(
-                'Insufficient merchant credit for this order.',
-                [],
-                'Modules.Merchantcredit.Shop'
-            );
-            $controller->redirectWithNotifications('index.php?controller=order&step=1');
-
-            return;
-        }
-
-        Tools::redirect('index.php?controller=order&step=1');
+        (new ActionObjectOrderAddBeforeHook($this))->handle($params);
     }
 
     public function hookActionCustomerFormBuilderModifier(array $params): void
     {
-        /** @var FormBuilderInterface $formBuilder */
-        $formBuilder = $params['form_builder'] ?? null;
-        if (!$formBuilder instanceof FormBuilderInterface) {
-            return;
-        }
-
-        $idCustomer = isset($params['id']) ? (int) $params['id'] : null;
-
-        $hooks = new CustomerFormHooks();
-        $hooks->addFieldToFormBuilder($formBuilder);
-        $hooks->fillFieldValue($formBuilder, $idCustomer);
+        (new CustomerFormBuilderModifierHook())->handle($params);
     }
 
     public function hookActionAfterUpdateCustomerFormHandler(array $params): void
     {
-        $idCustomer = isset($params['id']) ? (int) $params['id'] : 0;
-        if ($idCustomer <= 0) {
-            return;
-        }
-
-        (new CustomerFormHooks())->saveFieldValue($idCustomer);
+        (new AfterUpdateCustomerFormHandlerHook())->handle($params);
     }
 
     public function hookActionAfterCreateCustomerFormHandler(array $params): void
     {
-        $idCustomer = isset($params['id']) ? (int) $params['id'] : 0;
-        if ($idCustomer <= 0) {
-            return;
-        }
-
-        (new CustomerFormHooks())->saveFieldValue($idCustomer);
+        (new AfterCreateCustomerFormHandlerHook())->handle($params);
     }
 
     public function isUsingNewTranslationSystem(): bool
