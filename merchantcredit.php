@@ -13,11 +13,6 @@ use MerchantCredit\Hook\DisplayHeaderHook;
 use MerchantCredit\Hook\ActionOrderStatusUpdateHook;
 use MerchantCredit\Hook\PaymentOptionsHook;
 use MerchantCredit\Config\MerchantCreditConfig;
-use AdminController;
-use Configuration;
-use HelperForm;
-use Tools;
-
 class Merchantcredit extends PaymentModule
 {
     public function __construct()
