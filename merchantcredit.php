@@ -98,7 +98,9 @@ class Merchantcredit extends PaymentModule
     {
         include __DIR__ . '/sql/install.php';
 
-        Configuration::updateValue(MerchantCreditConfig::KEY_DEFAULT_LIMIT, MerchantCreditConfig::DEFAULT_LIMIT);
+        if (Configuration::get(MerchantCreditConfig::KEY_DEFAULT_LIMIT) === false) {
+            Configuration::updateValue(MerchantCreditConfig::KEY_DEFAULT_LIMIT, MerchantCreditConfig::DEFAULT_LIMIT);
+        }
 
         return parent::install()
             && $this->registerHook('paymentOptions')
