@@ -3,6 +3,7 @@
 namespace MerchantCredit\Hook;
 
 use MerchantCredit\Entity\MerchantCreditCustomer;
+use Merchantcredit as MerchantCreditModule;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
@@ -11,6 +12,13 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 class CustomerFormBuilderModifierHook
 {
     const FIELD_NAME = 'merchantcredit_limit';
+
+    private MerchantCreditModule $module;
+
+    public function __construct(MerchantCreditModule $module)
+    {
+        $this->module = $module;
+    }
 
     public function handle(array $params): void
     {
@@ -22,10 +30,10 @@ class CustomerFormBuilderModifierHook
         $idCustomer = isset($params['id']) ? (int) $params['id'] : null;
 
         $formBuilder->add(self::FIELD_NAME, NumberType::class, [
-            'label' => 'Merchant credit limit',
+            'label' => $this->module->getTranslator()->trans('Merchant credit limit', [], 'Modules.Merchantcredit.Admin'),
             'required' => false,
             'scale' => 2,
-            'help' => 'Maximum amount this customer can spend using the merchant credit payment method.',
+            'help' => $this->module->getTranslator()->trans('Maximum amount this customer can spend using the merchant credit payment method.', [], 'Modules.Merchantcredit.Admin'),
             'constraints' => [
                 new NotBlank(),
                 new GreaterThanOrEqual(['value' => 0]),

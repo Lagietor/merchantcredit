@@ -75,17 +75,17 @@ class Merchantcredit extends PaymentModule
 
     public function hookActionCustomerFormBuilderModifier(array $params): void
     {
-        (new CustomerFormBuilderModifierHook())->handle($params);
+        (new CustomerFormBuilderModifierHook($this))->handle($params);
     }
 
     public function hookActionAfterUpdateCustomerFormHandler(array $params): void
     {
-        (new AfterUpdateCustomerFormHandlerHook())->handle($params);
+        (new AfterUpdateCustomerFormHandlerHook($this))->handle($params);
     }
 
     public function hookActionAfterCreateCustomerFormHandler(array $params): void
     {
-        (new AfterCreateCustomerFormHandlerHook())->handle($params);
+        (new AfterCreateCustomerFormHandlerHook($this))->handle($params);
     }
 
     public function isUsingNewTranslationSystem(): bool
