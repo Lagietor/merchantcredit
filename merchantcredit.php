@@ -6,7 +6,6 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MerchantCredit\Hook\ActionObjectOrderAddBeforeHook;
 use MerchantCredit\Hook\AfterCreateCustomerFormHandlerHook;
 use MerchantCredit\Hook\AfterUpdateCustomerFormHandlerHook;
 use MerchantCredit\Hook\CustomerFormBuilderModifierHook;
@@ -105,7 +104,6 @@ class Merchantcredit extends PaymentModule
         return parent::install()
             && $this->registerHook('paymentOptions')
             && $this->registerHook('displayHeader')
-            && $this->registerHook('actionObjectOrderAddBefore')
             && $this->registerHook('actionCustomerFormBuilderModifier')
             && $this->registerHook('actionAfterUpdateCustomerFormHandler')
             && $this->registerHook('actionAfterCreateCustomerFormHandler')
@@ -135,11 +133,6 @@ class Merchantcredit extends PaymentModule
     public function hookDisplayHeader(): void
     {
         (new DisplayHeaderHook($this))->handle();
-    }
-
-    public function hookActionObjectOrderAddBefore(array $params): void
-    {
-        (new ActionObjectOrderAddBeforeHook($this))->handle($params);
     }
 
     public function hookActionCustomerFormBuilderModifier(array $params): void
