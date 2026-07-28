@@ -12,6 +12,11 @@ use MerchantCredit\Hook\AfterUpdateCustomerFormHandlerHook;
 use MerchantCredit\Hook\CustomerFormBuilderModifierHook;
 use MerchantCredit\Hook\DisplayHeaderHook;
 use MerchantCredit\Hook\PaymentOptionsHook;
+use MerchantCredit\Config\MerchantCreditConfig;
+use AdminController;
+use Configuration;
+use HelperForm;
+use Tools;
 
 class Merchantcredit extends PaymentModule
 {
@@ -32,9 +37,67 @@ class Merchantcredit extends PaymentModule
         $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => _PS_VERSION_];
     }
 
+    public function getContent(): string
+    {
+        $output = '';
+
+        if (Tools::isSubmit('submit_merchantcredit')) {
+            $newLimit = (float) Tools::getValue(MerchantCreditConfig::KEY_DEFAULT_LIMIT);
+            if ($newLimit < 0) {
+                $output .= $this->displayError(
+                    $this->trans('Default credit limit must be 0 or greater.', [], 'Modules.Merchantcredit.Admin')
+                );
+            } else {
+                Configuration::updateValue(MerchantCreditConfig::KEY_DEFAULT_LIMIT, $newLimit);
+                $output .= $this->displayConfirmation(
+                    $this->trans('Settings saved.', [], 'Modules.Merchantcredit.Admin')
+                );
+            }
+        }
+
+        return $output . $this->buildConfigForm();
+    }
+
+    private function buildConfigForm(): string
+    {
+        $fields = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->trans('Settings', [], 'Modules.Merchantcredit.Admin'),
+                    'icon'  => 'icon-credit-card',
+                ],
+                'input' => [
+                    [
+                        'type'  => 'text',
+                        'label' => $this->trans('Default credit limit', [], 'Modules.Merchantcredit.Admin'),
+                        'name'  => MerchantCreditConfig::KEY_DEFAULT_LIMIT,
+                        'desc'  => $this->trans('Credit limit assigned to new customers when their record is first created.', [], 'Modules.Merchantcredit.Admin'),
+                        'required' => true,
+                    ],
+                ],
+                'submit' => [
+                    'title' => $this->trans('Save', [], 'Modules.Merchantcredit.Admin'),
+                ],
+            ],
+        ];
+
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->submit_action = 'submit_merchantcredit';
+        $helper->fields_value[MerchantCreditConfig::KEY_DEFAULT_LIMIT] = MerchantCreditConfig::getDefaultLimit();
+
+        return $helper->generateForm([$fields]);
+    }
+
     public function install(): bool
     {
         include __DIR__ . '/sql/install.php';
+
+        Configuration::updateValue(MerchantCreditConfig::KEY_DEFAULT_LIMIT, MerchantCreditConfig::DEFAULT_LIMIT);
 
         return parent::install()
             && $this->registerHook('paymentOptions')
@@ -49,6 +112,8 @@ class Merchantcredit extends PaymentModule
     public function uninstall(): bool
     {
         include __DIR__ . '/sql/uninstall.php';
+
+        Configuration::deleteByName(MerchantCreditConfig::KEY_DEFAULT_LIMIT);
 
         return parent::uninstall();
     }
