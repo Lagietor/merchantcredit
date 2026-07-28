@@ -6,6 +6,18 @@
         <source>Adds a "Merchant Credit" payment method allowing customers to pay using credit granted by the merchant.</source>
         <target>Dodaje metodę płatności „Kredyt sprzedawcy”, umożliwiającą klientom opłacanie zamówień przy użyciu kredytu przyznanego przez sprzedawcę.</target>
       </trans-unit>
+      <trans-unit id="1f1b2dedb58cb23b302feab34e05a7ed">
+        <source>Credit limit assigned to new customers when their record is first created.</source>
+        <target>Limit kredytu przypisywany nowym klientom podczas tworzenia ich konta.</target>
+      </trans-unit>
+      <trans-unit id="7ec08655975338b786953d57ef23955c">
+        <source>Default credit limit</source>
+        <target>Domyślny limit kredytu</target>
+      </trans-unit>
+      <trans-unit id="7e0bcce208d573806ba7f37d7bfafcfa">
+        <source>Default credit limit must be 0 or greater.</source>
+        <target>Domyślny limit kredytu musi wynosić 0 lub więcej.</target>
+      </trans-unit>
       <trans-unit id="a9d4396c223a467e53366cae8de4d41f">
         <source>Maximum amount this customer can spend using the merchant credit payment method.</source>
         <target>Maksymalna kwota, jaką klient może wydać przy użyciu metody płatności kredytem sprzedawcy.</target>
@@ -17,6 +29,18 @@
       <trans-unit id="15ba9c85db53ce4e799474d48eabbb51">
         <source>Merchant credit limit</source>
         <target>Limit kredytu sprzedawcy</target>
+      </trans-unit>
+      <trans-unit id="c9cc8cce247e49bae79f15173ce97354">
+        <source>Save</source>
+        <target>Zapisz</target>
+      </trans-unit>
+      <trans-unit id="f4f70727dc34561dfde1a3c529b6205c">
+        <source>Settings</source>
+        <target>Ustawienia</target>
+      </trans-unit>
+      <trans-unit id="9a7e58ee13cb727cb7c4acc68f4cafe5">
+        <source>Settings saved.</source>
+        <target>Ustawienia zapisane.</target>
       </trans-unit>
     </body>
   </file>
