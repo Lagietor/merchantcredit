@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ModulesMerchantcreditAdmin.xlf" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="6d2b6ea6a9b5d52e1dae713d75f31ace">
+        <source>Adds a "Merchant Credit" payment method allowing customers to pay using credit granted by the merchant.</source>
+        <target>Dodaje metodę płatności „Kredyt sprzedawcy”, umożliwiającą klientom opłacanie zamówień przy użyciu kredytu przyznanego przez sprzedawcę.</target>
+      </trans-unit>
+      <trans-unit id="f61dd8ec889f3192817727c4c0c4e1f3">
+        <source>Merchant Credit</source>
+        <target>Merchant Credit</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ModulesMerchantcreditShop.xlf" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="da00b22510d3c6993f550b9e1335b981">
+        <source>Insufficient merchant credit for this order.</source>
+        <target>Nie masz wystarczającego kredytu sprzedawcy, aby opłacić to zamówienie.</target>
+      </trans-unit>
+      <trans-unit id="e2b7dec8fa4b498156dfee6e4c84b156">
+        <source>This payment method is not available.</source>
+        <target>Ta metoda płatności jest niedostępna.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
