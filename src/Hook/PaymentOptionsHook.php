@@ -50,7 +50,7 @@ class PaymentOptionsHook
         $option = new PaymentOption();
         $option->setModuleName($this->module->name)
             ->setCallToActionText(
-                $this->module->trans(
+                $this->module->getTranslator()->trans(
                     'Pay with merchant credit (%remaining% remaining)',
                     ['%remaining%' => $locale->formatPrice($remaining, $currencyIso)],
                     'Modules.Merchantcredit.Front'

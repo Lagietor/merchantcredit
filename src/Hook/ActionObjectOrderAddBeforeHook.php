@@ -34,7 +34,7 @@ class ActionObjectOrderAddBeforeHook
 
         $controller = $this->module->getContext()->controller;
         if ($controller instanceof FrontController) {
-            $controller->errors[] = $this->module->trans(
+            $controller->errors[] = $this->module->getTranslator()->trans(
                 'Insufficient merchant credit for this order.',
                 [],
                 'Modules.Merchantcredit.Shop'

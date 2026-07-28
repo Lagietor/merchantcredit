@@ -3,10 +3,18 @@
 namespace MerchantCredit\Hook;
 
 use MerchantCredit\Entity\MerchantCreditCustomer;
+use Merchantcredit as MerchantCreditModule;
 use Tools;
 
 class AfterCreateCustomerFormHandlerHook
 {
+    private MerchantCreditModule $module;
+
+    public function __construct(MerchantCreditModule $module)
+    {
+        $this->module = $module;
+    }
+
     public function handle(array $params): void
     {
         $idCustomer = isset($params['id']) ? (int) $params['id'] : 0;

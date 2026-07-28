@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ModulesMerchantcreditFront.xlf" source-language="pl-PL" target-language="pl-PL" datatype="plaintext">
+    <body>
+      <trans-unit id="7bfabcb5619fc3c5b754adc9b7013276">
+        <source>Amount to pay:</source>
+        <target>Kwota do zapłaty:</target>
+      </trans-unit>
+      <trans-unit id="0ceef078ad84799ca20c70a99b1c5929">
+        <source>Available merchant credit:</source>
+        <target>Dostępny kredyt sprzedawcy:</target>
+      </trans-unit>
+      <trans-unit id="5bb89870785e6f3f91571d790c79795d">
+        <source>Pay with merchant credit (%remaining% remaining)</source>
+        <target>Zapłać kredytem sprzedawcy (pozostało: %remaining%)</target>
+      </trans-unit>
+      <trans-unit id="404860f1ddc45d110d1ef905846d4c8a">
+        <source>The order amount will be deducted from your available credit once the order is placed.</source>
+        <target>Kwota zamówienia zostanie odjęta od dostępnego kredytu po złożeniu zamówienia.</target>
+      </trans-unit>
+      <trans-unit id="38edfce47c0593311488199d9a711971">
+        <source>Your merchant credit is insufficient for this order. Please choose another payment method.</source>
+        <target>Twój kredyt sprzedawcy jest niewystarczający dla tego zamówienia. Wybierz inną metodę płatności.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
