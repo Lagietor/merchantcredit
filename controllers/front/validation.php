@@ -1,5 +1,7 @@
 <?php
 
+use MerchantCredit\Entity\MerchantCreditCustomer;
+
 /**
  * @property Merchantcredit $module
  */
@@ -37,9 +39,10 @@ class MerchantcreditValidationModuleFrontController extends ModuleFrontControlle
             Tools::redirect('index.php?controller=order&step=1');
         }
 
+        $idCustomer = (int) $customer->id;
         $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
 
-        if (!\MerchantCredit\Entity\MerchantCreditCustomer::consume((int) $customer->id, $total)) {
+        if (MerchantCreditCustomer::getRemaining($idCustomer) < $total) {
             $this->errors[] = $this->module->getTranslator()->trans(
                 'Insufficient merchant credit for this order.',
                 [],
@@ -50,17 +53,33 @@ class MerchantcreditValidationModuleFrontController extends ModuleFrontControlle
             return;
         }
 
-        $this->module->validateOrder(
-            (int) $cart->id,
-            (int) Configuration::get('PS_OS_PAYMENT'),
-            $total,
-            $this->module->displayName,
-            null,
-            [],
-            (int) $this->context->currency->id,
-            false,
-            $customer->secure_key
-        );
+        if (!MerchantCreditCustomer::consume($idCustomer, $total)) {
+            $this->errors[] = $this->module->getTranslator()->trans(
+                'Insufficient merchant credit for this order.',
+                [],
+                'Modules.Merchantcredit.Shop'
+            );
+            $this->redirectWithNotifications('index.php?controller=order&step=1');
+
+            return;
+        }
+
+        try {
+            $this->module->validateOrder(
+                (int) $cart->id,
+                (int) Configuration::get('PS_OS_PAYMENT'),
+                $total,
+                $this->module->displayName,
+                null,
+                [],
+                (int) $this->context->currency->id,
+                false,
+                $customer->secure_key
+            );
+        } catch (Exception $e) {
+            MerchantCreditCustomer::refund($idCustomer, $total);
+            throw $e;
+        }
 
         Tools::redirect(
             'index.php?controller=order-confirmation'

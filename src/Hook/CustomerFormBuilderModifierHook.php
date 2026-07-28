@@ -7,7 +7,6 @@ use Merchantcredit as MerchantCreditModule;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class CustomerFormBuilderModifierHook
 {
@@ -35,7 +34,6 @@ class CustomerFormBuilderModifierHook
             'scale' => 2,
             'help' => $this->module->getTranslator()->trans('Maximum amount this customer can spend using the merchant credit payment method.', [], 'Modules.Merchantcredit.Admin'),
             'constraints' => [
-                new NotBlank(),
                 new GreaterThanOrEqual(['value' => 0]),
             ],
             'mapped' => false,

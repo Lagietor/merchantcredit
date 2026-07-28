@@ -119,4 +119,40 @@ class MerchantCreditCustomerTest extends TestCase
 
         $this->assertSame(7, (int) $model->id_customer);
     }
+
+    public function testGetRemainingReturnsConfiguredDefaultWhenNoRecord(): void
+    {
+        $db = $this->createMock(\Db::class);
+        $db->method('getValue')->willReturn(0);
+        \Db::setInstance($db);
+
+        \Configuration::updateValue('MERCHANTCREDIT_DEFAULT_LIMIT', 80.0);
+
+        $remaining = MerchantCreditCustomer::getRemaining(99);
+
+        $this->assertSame(80.0, $remaining);
+    }
+
+    public function testRefundReturnsTrueOnSuccess(): void
+    {
+        $db = $this->createMock(\Db::class);
+        $db->method('execute')->willReturn(true);
+        \Db::setInstance($db);
+
+        $result = MerchantCreditCustomer::refund(1, 25.0);
+
+        $this->assertTrue($result);
+    }
+
+    public function testRefundUsesGreatestToPreventNegativeBalance(): void
+    {
+        $db = $this->createMock(\Db::class);
+        $db->expects($this->once())
+            ->method('execute')
+            ->with($this->stringContains('GREATEST(0,'))
+            ->willReturn(true);
+        \Db::setInstance($db);
+
+        MerchantCreditCustomer::refund(1, 999.0);
+    }
 }
