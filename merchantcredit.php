@@ -6,10 +6,15 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+use MerchantCredit\Repository\CreditRepository;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+
 class Merchantcredit extends PaymentModule
 {
     const MODULE_ADMIN_CONTROLLER = 'AdminMerchantCreditConfiguration';
     const DEFAULT_CREDIT_LIMIT = 50.0;
+
+    public $controllers = ['validation'];
 
     public function __construct()
     {
@@ -22,8 +27,8 @@ class Merchantcredit extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->trans('Kredyt Sprzedawcy', [], 'Modules.Merchantcredit.Admin');
-        $this->description = $this->trans('Dodaje metodę płatności "Kredyt Sprzedawcy" umożliwiającą zakup na kredyt przyznany przez sprzedawcę.', [], 'Modules.Merchantcredit.Admin');
+        $this->displayName = $this->trans('Merchant Credit', [], 'Modules.Merchantcredit.Admin');
+        $this->description = $this->trans('Adds a "Merchant Credit" payment method allowing customers to pay using credit granted by the merchant.', [], 'Modules.Merchantcredit.Admin');
 
         $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => _PS_VERSION_];
     }
@@ -45,15 +50,53 @@ class Merchantcredit extends PaymentModule
         return parent::uninstall();
     }
 
-    public function hookPaymentOptions(): array
+    public function getCreditRepository(): CreditRepository
+    {
+        return new CreditRepository(Db::getInstance(), self::DEFAULT_CREDIT_LIMIT);
+    }
+
+    public function hookPaymentOptions(array $params): array
     {
         if (!$this->active) {
             return [];
         }
 
-        $option = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $option->setCallToActionText($this->trans('Zapłać kredytem sprzedawcy', [], 'Modules.Merchantcredit.Front'))
-               ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true));
+        /** @var Cart $cart */
+        $cart = $params['cart'];
+        $idCustomer = (int) $cart->id_customer;
+
+        if ($idCustomer === 0) {
+            return [];
+        }
+
+        $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
+        $remaining = $this->getCreditRepository()->getRemaining($idCustomer);
+
+        if ($remaining < $total) {
+            return [];
+        }
+
+        $locale = $this->context->getCurrentLocale();
+        $currencyIso = $this->context->currency->iso_code;
+
+        $this->smarty->assign([
+            'remaining_formatted' => $locale->formatPrice($remaining, $currencyIso),
+            'total_formatted'     => $locale->formatPrice($total, $currencyIso),
+        ]);
+
+        $option = new PaymentOption();
+        $option->setModuleName($this->name)
+               ->setCallToActionText(
+                   $this->trans(
+                       'Pay with merchant credit (%remaining% remaining)',
+                       ['%remaining%' => $locale->formatPrice($remaining, $currencyIso)],
+                       'Modules.Merchantcredit.Front'
+                   )
+               )
+               ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true))
+               ->setAdditionalInformation(
+                   $this->fetch('module:merchantcredit/views/templates/hook/payment_infos.tpl')
+               );
 
         return [$option];
     }

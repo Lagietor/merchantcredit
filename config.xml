@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>merchantcredit</name>
-    <displayName><![CDATA[Kredyt Sprzedawcy]]></displayName>
+    <displayName><![CDATA[Merchant Credit]]></displayName>
     <version><![CDATA[1.0.0]]></version>
-    <description><![CDATA[Dodaje metodę płatności "Kredyt Sprzedawcy" umożliwiającą zakup na kredyt przyznany przez sprzedawcę.]]></description>
+    <description><![CDATA[Adds a "Merchant Credit" payment method allowing customers to pay using credit granted by the merchant.]]></description>
     <author><![CDATA[Lagietor]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
     <is_configurable>1</is_configurable>
