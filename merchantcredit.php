@@ -6,13 +6,12 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use MerchantCredit\Repository\CreditRepository;
+use MerchantCredit\Entity\MerchantCreditCustomer;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 class Merchantcredit extends PaymentModule
 {
     const MODULE_ADMIN_CONTROLLER = 'AdminMerchantCreditConfiguration';
-    const DEFAULT_CREDIT_LIMIT = 50.0;
 
     public $controllers = ['validation'];
 
@@ -40,6 +39,7 @@ class Merchantcredit extends PaymentModule
         return parent::install()
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
+            && $this->registerHook('actionObjectOrderAddBefore')
         ;
     }
 
@@ -48,11 +48,6 @@ class Merchantcredit extends PaymentModule
         include(dirname(__FILE__).'/sql/uninstall.php');
 
         return parent::uninstall();
-    }
-
-    public function getCreditRepository(): CreditRepository
-    {
-        return new CreditRepository(Db::getInstance(), self::DEFAULT_CREDIT_LIMIT);
     }
 
     public function hookPaymentOptions(array $params): array
@@ -70,11 +65,8 @@ class Merchantcredit extends PaymentModule
         }
 
         $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
-        $remaining = $this->getCreditRepository()->getRemaining($idCustomer);
-
-        if ($remaining < $total) {
-            return [];
-        }
+        $remaining = MerchantCreditCustomer::getRemaining($idCustomer);
+        $hasEnoughCredit = $remaining >= $total;
 
         $locale = $this->context->getCurrentLocale();
         $currencyIso = $this->context->currency->iso_code;
@@ -82,6 +74,7 @@ class Merchantcredit extends PaymentModule
         $this->smarty->assign([
             'remaining_formatted' => $locale->formatPrice($remaining, $currencyIso),
             'total_formatted'     => $locale->formatPrice($total, $currencyIso),
+            'has_enough_credit'   => $hasEnoughCredit,
         ]);
 
         $option = new PaymentOption();
@@ -103,6 +96,36 @@ class Merchantcredit extends PaymentModule
 
     public function hookPaymentReturn(): void
     {
+    }
+
+    public function hookActionObjectOrderAddBefore(array $params): void
+    {
+        /** @var Order $order */
+        $order = $params['object'] ?? null;
+        if (!$order instanceof Order || $order->module !== $this->name) {
+            return;
+        }
+
+        $idCustomer = (int) $order->id_customer;
+        $total = (float) $order->total_paid;
+
+        if (MerchantCreditCustomer::getRemaining($idCustomer) >= $total) {
+            return;
+        }
+
+        $controller = $this->context->controller;
+        if ($controller instanceof FrontController) {
+            $controller->errors[] = $this->trans(
+                'Insufficient merchant credit for this order.',
+                [],
+                'Modules.Merchantcredit.Shop'
+            );
+            $controller->redirectWithNotifications('index.php?controller=order&step=1');
+
+            return;
+        }
+
+        Tools::redirect('index.php?controller=order&step=1');
     }
 
     public function isUsingNewTranslationSystem(): bool

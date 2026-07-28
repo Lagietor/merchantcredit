@@ -38,15 +38,16 @@ class MerchantcreditValidationModuleFrontController extends ModuleFrontControlle
         }
 
         $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
-        $repository = $this->module->getCreditRepository();
 
-        if (!$repository->consume((int) $customer->id, $total)) {
+        if (!\MerchantCredit\Entity\MerchantCreditCustomer::consume((int) $customer->id, $total)) {
             $this->errors[] = $this->module->getTranslator()->trans(
-                'Insufficient merchant credit to pay for this order.',
+                'Insufficient merchant credit for this order.',
                 [],
                 'Modules.Merchantcredit.Shop'
             );
             $this->redirectWithNotifications('index.php?controller=order&step=1');
+
+            return;
         }
 
         $this->module->validateOrder(
