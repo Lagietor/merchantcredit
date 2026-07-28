@@ -11,6 +11,7 @@ use MerchantCredit\Hook\AfterCreateCustomerFormHandlerHook;
 use MerchantCredit\Hook\AfterUpdateCustomerFormHandlerHook;
 use MerchantCredit\Hook\CustomerFormBuilderModifierHook;
 use MerchantCredit\Hook\DisplayHeaderHook;
+use MerchantCredit\Hook\ActionOrderStatusUpdateHook;
 use MerchantCredit\Hook\PaymentOptionsHook;
 use MerchantCredit\Config\MerchantCreditConfig;
 use AdminController;
@@ -106,6 +107,7 @@ class Merchantcredit extends PaymentModule
             && $this->registerHook('actionCustomerFormBuilderModifier')
             && $this->registerHook('actionAfterUpdateCustomerFormHandler')
             && $this->registerHook('actionAfterCreateCustomerFormHandler')
+            && $this->registerHook('actionOrderStatusUpdate')
         ;
     }
 
@@ -151,6 +153,11 @@ class Merchantcredit extends PaymentModule
     public function hookActionAfterCreateCustomerFormHandler(array $params): void
     {
         (new AfterCreateCustomerFormHandlerHook($this))->handle($params);
+    }
+
+    public function hookActionOrderStatusUpdate(array $params): void
+    {
+        (new ActionOrderStatusUpdateHook($this))->handle($params);
     }
 
     public function isUsingNewTranslationSystem(): bool
