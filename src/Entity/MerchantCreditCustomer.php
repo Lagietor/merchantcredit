@@ -4,6 +4,7 @@ namespace MerchantCredit\Entity;
 
 use Db;
 use DbQuery;
+use MerchantCredit\Config\MerchantCreditConfig;
 
 class MerchantCreditCustomer extends \ObjectModel
 {
@@ -49,7 +50,7 @@ class MerchantCreditCustomer extends \ObjectModel
 
         $model = new self();
         $model->id_customer = $idCustomer;
-        $model->credit_limit = self::DEFAULT_CREDIT_LIMIT;
+        $model->credit_limit = MerchantCreditConfig::getDefaultLimit();
         $model->credit_used = 0;
         $model->save();
 
