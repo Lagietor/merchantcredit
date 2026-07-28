@@ -58,7 +58,10 @@ class MerchantCreditCustomer extends \ObjectModel
 
     public static function getRemaining(int $idCustomer): float
     {
-        $model = self::ensureForCustomer($idCustomer);
+        $model = self::getByCustomer($idCustomer);
+        if ($model === null) {
+            return (float) self::DEFAULT_CREDIT_LIMIT;
+        }
 
         return (float) $model->credit_limit - (float) $model->credit_used;
     }
@@ -73,6 +76,16 @@ class MerchantCreditCustomer extends \ObjectModel
                  `date_upd` = "' . pSQL(date('Y-m-d H:i:s')) . '"
              WHERE `id_customer` = ' . $idCustomer . '
                AND `credit_limit` - `credit_used` >= ' . (float) $amount
+        );
+    }
+
+    public static function refund(int $idCustomer, float $amount): bool
+    {
+        return Db::getInstance()->execute(
+            'UPDATE `' . _DB_PREFIX_ . self::$definition['table'] . '`
+             SET `credit_used` = GREATEST(0, `credit_used` - ' . (float) $amount . '),
+                 `date_upd` = "' . pSQL(date('Y-m-d H:i:s')) . '"
+             WHERE `id_customer` = ' . $idCustomer
         );
     }
 }
