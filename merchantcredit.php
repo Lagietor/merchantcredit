@@ -7,7 +7,9 @@ if (!defined('_PS_VERSION_')) {
 require_once __DIR__ . '/vendor/autoload.php';
 
 use MerchantCredit\Entity\MerchantCreditCustomer;
+use MerchantCredit\Hook\CustomerFormHooks;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Symfony\Component\Form\FormBuilderInterface;
 
 class Merchantcredit extends PaymentModule
 {
@@ -40,6 +42,9 @@ class Merchantcredit extends PaymentModule
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
             && $this->registerHook('actionObjectOrderAddBefore')
+            && $this->registerHook('actionCustomerFormBuilderModifier')
+            && $this->registerHook('actionAfterUpdateCustomerFormHandler')
+            && $this->registerHook('actionAfterCreateCustomerFormHandler')
         ;
     }
 
@@ -126,6 +131,41 @@ class Merchantcredit extends PaymentModule
         }
 
         Tools::redirect('index.php?controller=order&step=1');
+    }
+
+    public function hookActionCustomerFormBuilderModifier(array $params): void
+    {
+        /** @var FormBuilderInterface $formBuilder */
+        $formBuilder = $params['form_builder'] ?? null;
+        if (!$formBuilder instanceof FormBuilderInterface) {
+            return;
+        }
+
+        $idCustomer = isset($params['id']) ? (int) $params['id'] : null;
+
+        $hooks = new CustomerFormHooks();
+        $hooks->addFieldToFormBuilder($formBuilder);
+        $hooks->fillFieldValue($formBuilder, $idCustomer);
+    }
+
+    public function hookActionAfterUpdateCustomerFormHandler(array $params): void
+    {
+        $idCustomer = isset($params['id']) ? (int) $params['id'] : 0;
+        if ($idCustomer <= 0) {
+            return;
+        }
+
+        (new CustomerFormHooks())->saveFieldValue($idCustomer);
+    }
+
+    public function hookActionAfterCreateCustomerFormHandler(array $params): void
+    {
+        $idCustomer = isset($params['id']) ? (int) $params['id'] : 0;
+        if ($idCustomer <= 0) {
+            return;
+        }
+
+        (new CustomerFormHooks())->saveFieldValue($idCustomer);
     }
 
     public function isUsingNewTranslationSystem(): bool
