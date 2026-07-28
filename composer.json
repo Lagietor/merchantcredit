@@ -1,0 +1,8 @@
+{
+    "name": "lagietor/merchantcredit",
+    "autoload": {
+        "psr-4": {
+            "MerchantCredit\\": "src/"
+        }
+    }
+}
