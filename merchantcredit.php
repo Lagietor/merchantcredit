@@ -15,6 +15,7 @@ use MerchantCredit\Hook\PaymentOptionsHook;
 use MerchantCredit\Config\MerchantCreditConfig;
 use AdminController;
 use Configuration;
+use HelperForm;
 use Tools;
 
 class Merchantcredit extends PaymentModule
@@ -54,14 +55,42 @@ class Merchantcredit extends PaymentModule
             }
         }
 
-        $this->context->smarty->assign([
-            'merchantcredit_default_limit'     => Configuration::get(MerchantCreditConfig::KEY_DEFAULT_LIMIT, null, null, null, MerchantCreditConfig::DEFAULT_LIMIT),
-            'merchantcredit_key_default_limit' => MerchantCreditConfig::KEY_DEFAULT_LIMIT,
-            'merchantcredit_submit_name'       => 'submit_merchantcredit',
-            'merchantcredit_action_url'        => AdminController::$currentIndex . '&configure=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
-        ]);
+        return $output . $this->buildConfigForm();
+    }
 
-        return $output . $this->fetch('module:merchantcredit/views/templates/admin/config.tpl');
+    private function buildConfigForm(): string
+    {
+        $fields = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->trans('Settings', [], 'Modules.Merchantcredit.Admin'),
+                    'icon'  => 'icon-credit-card',
+                ],
+                'input' => [
+                    [
+                        'type'  => 'text',
+                        'label' => $this->trans('Default credit limit', [], 'Modules.Merchantcredit.Admin'),
+                        'name'  => MerchantCreditConfig::KEY_DEFAULT_LIMIT,
+                        'desc'  => $this->trans('Credit limit assigned to new customers when their record is first created.', [], 'Modules.Merchantcredit.Admin'),
+                        'required' => true,
+                    ],
+                ],
+                'submit' => [
+                    'title' => $this->trans('Save', [], 'Modules.Merchantcredit.Admin'),
+                ],
+            ],
+        ];
+
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->submit_action = 'submit_merchantcredit';
+        $helper->fields_value[MerchantCreditConfig::KEY_DEFAULT_LIMIT] = MerchantCreditConfig::getDefaultLimit();
+
+        return $helper->generateForm([$fields]);
     }
 
     public function install(): bool
