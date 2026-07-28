@@ -61,7 +61,7 @@ class MerchantCreditCustomer extends \ObjectModel
     {
         $model = self::getByCustomer($idCustomer);
         if ($model === null) {
-            return (float) self::DEFAULT_CREDIT_LIMIT;
+            return MerchantCreditConfig::getDefaultLimit();
         }
 
         return (float) $model->credit_limit - (float) $model->credit_used;

@@ -120,15 +120,17 @@ class MerchantCreditCustomerTest extends TestCase
         $this->assertSame(7, (int) $model->id_customer);
     }
 
-    public function testGetRemainingReturnsDefaultWhenNoRecord(): void
+    public function testGetRemainingReturnsConfiguredDefaultWhenNoRecord(): void
     {
         $db = $this->createMock(\Db::class);
         $db->method('getValue')->willReturn(0);
         \Db::setInstance($db);
 
+        \Configuration::updateValue('MERCHANTCREDIT_DEFAULT_LIMIT', 80.0);
+
         $remaining = MerchantCreditCustomer::getRemaining(99);
 
-        $this->assertSame(MerchantCreditCustomer::DEFAULT_CREDIT_LIMIT, $remaining);
+        $this->assertSame(80.0, $remaining);
     }
 
     public function testRefundReturnsTrueOnSuccess(): void
